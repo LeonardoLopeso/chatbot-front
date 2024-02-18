@@ -24,6 +24,17 @@ export const HistoryDialog = styled.div`
     gap: 1rem;
     height: 100%;
 
+    .image {
+      width: 110px;
+      height: 110px;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+    }
+
     span {
       color: #777;
       font-size: 1.2rem;
@@ -73,6 +84,10 @@ export const HistoryDialog = styled.div`
   @keyframes bblFadInOut {
     0%, 80%, 100% { box-shadow: 0 2.5em 0 -1.3em }
     40% { box-shadow: 0 2.5em 0 0 }
+  }
+
+  @media (max-width: 760px) {
+    padding: 2rem 1rem;
   }
 `;
 

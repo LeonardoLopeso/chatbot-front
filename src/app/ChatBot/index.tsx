@@ -79,7 +79,9 @@ const ChatBot = () => {
               duration: .3,
             }}
           >
-              <Image src={Logo} alt="Logo de perfil da loja" />
+              <div className="image">
+                <Image src={Logo} alt="Logo de perfil da loja" />
+              </div>
               <span>Bem vindo(a) ao All Pé</span>
             {/* <span className="loader"></span> */}
           </motion.div>
