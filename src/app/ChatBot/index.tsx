@@ -15,7 +15,7 @@ import Image from "next/image";
 import LogoProfile from '@/assets/img/logo-profile.png'
 import Logo from '@/assets/img/logo_grande.png'
 import { getFormattedDateTime } from "../utils/helpers";
-
+import { http } from "@/services/api";
 import { motion } from 'framer-motion'
 
 // Define o tipo da propriedade message
@@ -29,12 +29,22 @@ const ChatBot = () => {
   const [prompt, setPrompt] = useState<string>("");
   const [dialog, setDialog] = useState<string[]>([]);
 
-  const sendPrompt = () => {
-    if (prompt) {
-      setDialog([...dialog, prompt]);
+  const sendPrompt = async () => {
+    let prop = prompt
+    setPrompt("");
+    
+    if (prop) {
+      try {
+        await http.post<ChatMessageProps>('http://localhost:8000/api/v1/chat/', { prompt: prop }).then((res)=>{
+        if (res.status === 200){
+          setDialog(prevMessages => [...prevMessages, res.data.message]);
+        }
+        });
+      } catch (error) {
+        console.error('Erro ao obter mensagem do chatbot: ', error);
+      }
     }
 
-    setPrompt("");
   }
 
   // Define o componente ChatBotMessage
@@ -87,33 +97,31 @@ const ChatBot = () => {
           </motion.div>
         }
         {dialog.map((dialog, key) => {
-          const isLastMessage = key === dialog.length - 1;
-
           return (
             <>
-              <MessageSend key={key}>
-                <motion.div
-                  initial={{ x: 10, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{
-                    type: "spring",
-                    damping: 9,
-                    mass: .4,
-                    stiffness: 150,
-                    duration: 1,
-                    delay: .4
-                  }}
-                >
-                  <div className="message">
-                    {dialog}
-                    <span>{getFormattedDateTime()}</span>
-                  </div>
-                </motion.div>
 
-                <AiOutlineUser size={20} fill="#1b662e" />
-              </MessageSend>
-
-              {!isLastMessage &&
+              {key % 2 === 0 ?
+                <MessageSend key={key}>
+                  <motion.div
+                    initial={{ x: 10, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{
+                      type: "spring",
+                      damping: 9,
+                      mass: .4,
+                      stiffness: 150,
+                      duration: 1,
+                      delay: .4
+                    }}
+                  >
+                    <div className="message">
+                      {dialog}
+                      <span>{getFormattedDateTime()}</span>
+                    </div>
+                  </motion.div>
+                  <AiOutlineUser size={20} fill="#1b662e" />
+                </MessageSend>
+                :
                 <motion.div
                   initial={{ x: -30, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
@@ -130,20 +138,10 @@ const ChatBot = () => {
                     <div className="image">
                       <Image src={LogoProfile} alt="Logo de perfil da loja" />
                     </div>
-                    <ChatBotMessage message="Olá, eu sou o ChatBot!" delay={2000} />
+                    <ChatBotMessage message={dialog} delay={2000} />
                   </MessageChatBot>
                 </motion.div>
               }
-              {/* {isLastMessage &&
-                <MessageChatBot>
-                  <div className="image">
-                    <Image src={LogoProfile} alt="Logo de perfil da loja" />
-                  </div>
-                  <div className="message">
-                    <span>Digitando...</span>
-                  </div>
-                </MessageChatBot>
-              } */}
             </>
           )
         })}
@@ -159,7 +157,8 @@ const ChatBot = () => {
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
-              sendPrompt()
+              sendPrompt();
+              setDialog(prevMessages => [...prevMessages, prompt]);
             }
           }}
         />
